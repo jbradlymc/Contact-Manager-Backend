@@ -55,6 +55,8 @@ public class ContactServiceImpl implements ContactService {
         response.setLastName(contact.getLastName());
         response.setEmail(contact.getEmail());
         response.setPhoneNumber(contact.getPhoneNumber());
+        response.setCreateAt(contact.getCreatedAt());
+        response.setUpdatedAt(contact.getCreatedAt());
 
         return response;
 
