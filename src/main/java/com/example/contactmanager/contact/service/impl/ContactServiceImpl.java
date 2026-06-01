@@ -2,6 +2,7 @@ package com.example.contactmanager.contact.service.impl;
 
 import com.example.contactmanager.contact.dto.ContactResponse;
 import com.example.contactmanager.contact.dto.CreateContactRequest;
+import com.example.contactmanager.contact.dto.UpdateContactRequest;
 import com.example.contactmanager.contact.model.entity.Contact;
 import com.example.contactmanager.contact.repository.ContactRepository;
 import com.example.contactmanager.contact.service.ContactService;
@@ -96,16 +97,33 @@ public class ContactServiceImpl implements ContactService {
     }
 
     @Override
-    public ContactResponse deleteContact(Long id) {
+    public void deleteContact(Long id) {
 
             Contact contact = contactRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Contact not found with id: " + id));
 
-            contactRepository.delete(contact);
-
             logger.info("message='Contact deleted successfully!' contactId={}", contact.getId());
 
-            return mapToResponse(contact);
+            contactRepository.delete(contact);
+
+    }
+
+    @Override
+    public ContactResponse updateContact(Long id, UpdateContactRequest request) {
+
+        Contact contact = contactRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Contact not found with id: " + id));
+
+        contact.setFirstName(request.getFirstName());
+        contact.setLastName(request.getLastName());
+        contact.setEmail(request.getEmail());
+        contact.setPhoneNumber(request.getPhoneNumber());
+
+        Contact updatedContact = contactRepository.save(contact);
+
+        logger.info("message='Contact updated successfully!' contactId={}", updatedContact.getId());
+
+        return mapToResponse(updatedContact);
 
     }
 
