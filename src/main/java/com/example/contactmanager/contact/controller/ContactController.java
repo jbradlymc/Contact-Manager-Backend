@@ -2,8 +2,10 @@ package com.example.contactmanager.contact.controller;
 
 import com.example.contactmanager.contact.dto.ContactResponse;
 import com.example.contactmanager.contact.dto.CreateContactRequest;
+import com.example.contactmanager.contact.dto.UpdateContactRequest;
 import com.example.contactmanager.contact.service.ContactService;
 import com.example.contactmanager.contact.service.impl.ContactServiceImpl;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +23,7 @@ public class ContactController {
     }
 
     @PostMapping("/createContact")
-    public ResponseEntity<ContactResponse> createContact(@RequestBody CreateContactRequest request) {
+    public ResponseEntity<ContactResponse> createContact(@Valid @RequestBody CreateContactRequest request) {
 
         ContactResponse response = contactService.createContact(request);
 
@@ -50,11 +52,20 @@ public class ContactController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ContactResponse> deleteContact(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteContact(@PathVariable Long id) {
 
-        ContactResponse response = contactService.deleteContact(id);
+        contactService.deleteContact(id);
 
         return ResponseEntity.noContent().build();
+
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ContactResponse> updateContact(@PathVariable Long id, @Valid @RequestBody UpdateContactRequest request) {
+
+        ContactResponse response = contactService.updateContact(id, request);
+
+        return ResponseEntity.ok(response);
 
     }
 
