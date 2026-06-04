@@ -18,21 +18,13 @@ public class Contact {
     private Long id;
 
     @Column(nullable = false)
-    @NotBlank(message = "First name is required")
     private String firstName;
     private String lastName;
 
     @Column(unique = true, nullable = false)
-    @Email(message = "Email should be valid")
-    @NotBlank(message = "Email is required")
     private String email;
 
     @Column(unique = true, nullable = false)
-    @NotBlank(message = "Phone number is required")
-    @Pattern(
-            regexp = "^09\\d{9}$",
-            message = "Phone number must be 11 digits and start with 09"
-    )
     private String phoneNumber;
 
     @CreationTimestamp

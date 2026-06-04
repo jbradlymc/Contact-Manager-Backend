@@ -31,25 +31,42 @@ public class ContactServiceImpl implements ContactService {
     @Override
     public ContactResponse createContact(CreateContactRequest request) {
 
-        Optional<Contact> existingContact = contactRepository.findByEmail(request.getEmail());
+        if (contactRepository.findByEmail(request.getEmail()).isPresent()) {
 
-        if (existingContact.isPresent()) {
-
-            logger.warn("Contact with email already exists! email={}", request.getEmail());
+            logger.warn(
+                    "Contact with email already exists! email={}",
+                    request.getEmail()
+            );
 
             throw new ConflictException(
                     HttpStatus.CONFLICT.value(),
                     "Contact with email already exists: " + request.getEmail(),
                     Collections.emptyMap()
             );
+        }
 
+        if (contactRepository.findByPhoneNumber(request.getPhoneNumber()).isPresent()) {
+
+            logger.warn(
+                    "Contact with phone number already exists! phoneNumber={}",
+                    request.getPhoneNumber()
+            );
+
+            throw new ConflictException(
+                    HttpStatus.CONFLICT.value(),
+                    "Contact with phone number already exists: " + request.getPhoneNumber(),
+                    Collections.emptyMap()
+            );
         }
 
         Contact contact = generateContact(request);
 
-        Contact savedContact = saveContact(contact);
+        Contact savedContact = contactRepository.save(contact);
 
-        logger.info("Contact created successfully!' contactId={}", savedContact.getId());
+        logger.info(
+                "Contact created successfully! contactId={}",
+                savedContact.getId()
+        );
 
         return mapToResponse(savedContact);
 
@@ -84,7 +101,7 @@ public class ContactServiceImpl implements ContactService {
         response.setEmail(contact.getEmail());
         response.setPhoneNumber(contact.getPhoneNumber());
         response.setCreateAt(contact.getCreatedAt());
-        response.setUpdatedAt(contact.getCreatedAt());
+        response.setUpdatedAt(contact.getUpdatedAt());
 
         return response;
 
@@ -138,9 +155,24 @@ public class ContactServiceImpl implements ContactService {
     @Override
     public ContactResponse updateContact(Long id, UpdateContactRequest request) {
 
-        Optional<Contact> existingContact = contactRepository.findByEmail(request.getEmail());
+        Contact contact = contactRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(
+                        HttpStatus.NOT_FOUND.value(),
+                        "Contact not found with id: " + id,
+                        Collections.emptyMap()
+                ));
 
-        if (existingContact.isPresent() && !existingContact.get().getId().equals(id)) {
+        Optional<Contact> emailContact =
+                contactRepository.findByEmail(request.getEmail());
+
+        if (emailContact.isPresent()
+                && !emailContact.get().getId().equals(id)) {
+
+            logger.warn(
+                    "Contact with email already exists! email={}",
+                    request.getEmail()
+            );
+
             throw new ConflictException(
                     HttpStatus.CONFLICT.value(),
                     "Contact with email already exists: " + request.getEmail(),
@@ -148,12 +180,23 @@ public class ContactServiceImpl implements ContactService {
             );
         }
 
-        Contact contact = contactRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException(
-                        HttpStatus.NOT_FOUND.value(),
-                        "Contact not found with id: " + id,
-                        Collections.emptyMap()
-                ));
+        Optional<Contact> phoneContact =
+                contactRepository.findByPhoneNumber(request.getPhoneNumber());
+
+        if (phoneContact.isPresent()
+                && !phoneContact.get().getId().equals(id)) {
+
+            logger.warn(
+                    "Contact with phone number already exists! phoneNumber={}",
+                    request.getPhoneNumber()
+            );
+
+            throw new ConflictException(
+                    HttpStatus.CONFLICT.value(),
+                    "Contact with phone number already exists: " + request.getPhoneNumber(),
+                    Collections.emptyMap()
+            );
+        }
 
         contact.setFirstName(request.getFirstName());
         contact.setLastName(request.getLastName());
@@ -162,7 +205,10 @@ public class ContactServiceImpl implements ContactService {
 
         Contact updatedContact = contactRepository.save(contact);
 
-        logger.info("Contact updated successfully!' contactId={}", updatedContact.getId());
+        logger.info(
+                "Contact updated successfully! contactId={}",
+                updatedContact.getId()
+        );
 
         return mapToResponse(updatedContact);
 
