@@ -1,11 +1,11 @@
 package com.example.contactmanager.contact.dto;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 
 public class CreateContactRequest {
+
+    @NotNull(message = "User ID is required")
+    private Long userId;
 
     @NotBlank(message = "First name is required")
     @Size(min = 3, message = "First name must be at least 3 characters long")
@@ -31,6 +31,14 @@ public class CreateContactRequest {
             message = "Phone number must be 11 digits and start with 09"
     )
     private String phoneNumber;
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
 
     public String getFirstName() {
         return firstName;

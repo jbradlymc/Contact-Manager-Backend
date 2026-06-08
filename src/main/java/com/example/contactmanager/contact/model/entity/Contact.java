@@ -1,5 +1,6 @@
 package com.example.contactmanager.contact.model.entity;
 
+import com.example.contactmanager.user.model.entity.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -32,6 +33,10 @@ public class Contact {
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     public Long getId() {
         return id;
@@ -77,4 +82,11 @@ public class Contact {
         return updatedAt;
     }
 
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 }

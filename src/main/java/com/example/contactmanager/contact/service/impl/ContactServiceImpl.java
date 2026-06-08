@@ -8,6 +8,8 @@ import com.example.contactmanager.contact.repository.ContactRepository;
 import com.example.contactmanager.contact.service.ContactService;
 import com.example.contactmanager.exception.ConflictException;
 import com.example.contactmanager.exception.NotFoundException;
+import com.example.contactmanager.user.model.entity.User;
+import com.example.contactmanager.user.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -23,9 +25,11 @@ public class ContactServiceImpl implements ContactService {
     private final Logger logger = LoggerFactory.getLogger(ContactServiceImpl.class);
 
     private final ContactRepository contactRepository;
+    private final UserRepository userRepository;
 
-    public ContactServiceImpl (ContactRepository contactRepository) {
+    public ContactServiceImpl (ContactRepository contactRepository, UserRepository userRepository) {
         this.contactRepository = contactRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -59,7 +63,16 @@ public class ContactServiceImpl implements ContactService {
             );
         }
 
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new NotFoundException(
+                        HttpStatus.NOT_FOUND.value(),
+                        "User not found with id: " + request.getUserId(),
+                        Collections.emptyMap()
+                ));
+
         Contact contact = generateContact(request);
+
+        contact.setUser(user);
 
         Contact savedContact = contactRepository.save(contact);
 
@@ -82,12 +95,6 @@ public class ContactServiceImpl implements ContactService {
         contact.setPhoneNumber(request.getPhoneNumber());
 
         return contact;
-
-    }
-
-    private Contact saveContact(Contact contact) {
-
-        return contactRepository.save(contact);
 
     }
 
