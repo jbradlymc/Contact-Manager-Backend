@@ -11,7 +11,17 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "contacts")
+@Table(
+        name = "contacts",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        columnNames = {"user_id", "email"}
+                ),
+                @UniqueConstraint(
+                        columnNames = {"user_id", "phone_number"}
+                )
+        }
+)
 public class Contact {
 
     @Id
@@ -22,10 +32,10 @@ public class Contact {
     private String firstName;
     private String lastName;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private String email;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private String phoneNumber;
 
     @CreationTimestamp

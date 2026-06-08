@@ -2,7 +2,6 @@ package com.example.contactmanager.contact.service.impl;
 
 import com.example.contactmanager.contact.dto.ContactResponse;
 import com.example.contactmanager.contact.dto.CreateContactRequest;
-import com.example.contactmanager.contact.dto.UpdateContactRequest;
 import com.example.contactmanager.contact.model.entity.Contact;
 import com.example.contactmanager.contact.repository.ContactRepository;
 import com.example.contactmanager.contact.service.ContactService;
@@ -17,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class ContactServiceImpl implements ContactService {
@@ -35,40 +33,40 @@ public class ContactServiceImpl implements ContactService {
     @Override
     public ContactResponse createContact(CreateContactRequest request) {
 
-//        if (contactRepository.findByEmail(request.getEmail()).isPresent()) {
-//
-//            logger.warn(
-//                    "Contact with email already exists! email={}",
-//                    request.getEmail()
-//            );
-//
-//            throw new ConflictException(
-//                    HttpStatus.CONFLICT.value(),
-//                    "Contact with email already exists: " + request.getEmail(),
-//                    Collections.emptyMap()
-//            );
-//        }
-//
-//        if (contactRepository.findByPhoneNumber(request.getPhoneNumber()).isPresent()) {
-//
-//            logger.warn(
-//                    "Contact with phone number already exists! phoneNumber={}",
-//                    request.getPhoneNumber()
-//            );
-//
-//            throw new ConflictException(
-//                    HttpStatus.CONFLICT.value(),
-//                    "Contact with phone number already exists: " + request.getPhoneNumber(),
-//                    Collections.emptyMap()
-//            );
-//        }
-
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new NotFoundException(
                         HttpStatus.NOT_FOUND.value(),
                         "User not found with id: " + request.getUserId(),
                         Collections.emptyMap()
                 ));
+
+        if (contactRepository.findByUserIdAndEmail(request.getUserId(), request.getEmail()).isPresent()) {
+
+            logger.warn(
+                    "Contact with email already exists! email={}",
+                    request.getEmail()
+            );
+
+            throw new ConflictException(
+                    HttpStatus.CONFLICT.value(),
+                    "Contact with email already exists: " + request.getEmail(),
+                    Collections.emptyMap()
+            );
+        }
+
+        if (contactRepository.findByUserIdAndPhoneNumber(request.getUserId(), request.getPhoneNumber()).isPresent()) {
+
+            logger.warn(
+                    "Contact with phone number already exists! phoneNumber={}",
+                    request.getPhoneNumber()
+            );
+
+            throw new ConflictException(
+                    HttpStatus.CONFLICT.value(),
+                    "Contact with phone number already exists: " + request.getPhoneNumber(),
+                    Collections.emptyMap()
+            );
+        }
 
         Contact contact = generateContact(request);
 
