@@ -10,11 +10,11 @@ public interface ContactService {
 
     ContactResponse createContact(CreateContactRequest request);
 
-    ContactResponse getContactById(Long id);
+    List<ContactResponse> getContactByUserId(Long userId);
     List<ContactResponse> getAllContacts();
 
-    void deleteContact(Long id);
-
-    ContactResponse updateContact(Long id, UpdateContactRequest request);
+//    void deleteContact(Long id);
+//
+//    ContactResponse updateContact(Long id, UpdateContactRequest request);
 
 }

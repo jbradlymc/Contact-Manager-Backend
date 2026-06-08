@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 public class ContactResponse {
 
     private Long id;
+    private Long userId;
 
     private String firstName;
     private String lastName;
@@ -21,6 +22,14 @@ public class ContactResponse {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 
     public String getFirstName() {

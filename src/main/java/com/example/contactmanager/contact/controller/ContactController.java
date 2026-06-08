@@ -33,10 +33,10 @@ public class ContactController {
 
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ContactResponse> getContactById(@PathVariable Long id) {
+    @GetMapping("/{userId}")
+    public ResponseEntity<List<ContactResponse>> getContactByUserId(@PathVariable Long userId) {
 
-        ContactResponse response = contactService.getContactById(id);
+        List<ContactResponse> response = contactService.getContactByUserId(userId);
 
         return ResponseEntity.ok(response);
 
@@ -51,22 +51,22 @@ public class ContactController {
 
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteContact(@PathVariable Long id) {
-
-        contactService.deleteContact(id);
-
-        return ResponseEntity.noContent().build();
-
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<ContactResponse> updateContact(@PathVariable Long id, @Valid @RequestBody UpdateContactRequest request) {
-
-        ContactResponse response = contactService.updateContact(id, request);
-
-        return ResponseEntity.ok(response);
-
-    }
+//    @DeleteMapping("/{id}")
+//    public ResponseEntity<Void> deleteContact(@PathVariable Long id) {
+//
+//        contactService.deleteContact(id);
+//
+//        return ResponseEntity.noContent().build();
+//
+//    }
+//
+//    @PutMapping("/{id}")
+//    public ResponseEntity<ContactResponse> updateContact(@PathVariable Long id, @Valid @RequestBody UpdateContactRequest request) {
+//
+//        ContactResponse response = contactService.updateContact(id, request);
+//
+//        return ResponseEntity.ok(response);
+//
+//    }
 
 }
