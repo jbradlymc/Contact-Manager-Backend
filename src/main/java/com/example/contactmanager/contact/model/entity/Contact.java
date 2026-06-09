@@ -2,9 +2,6 @@ package com.example.contactmanager.contact.model.entity;
 
 import com.example.contactmanager.user.model.entity.User;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 

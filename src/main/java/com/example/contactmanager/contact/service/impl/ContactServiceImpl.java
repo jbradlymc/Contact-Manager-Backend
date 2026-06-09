@@ -2,6 +2,7 @@ package com.example.contactmanager.contact.service.impl;
 
 import com.example.contactmanager.contact.dto.ContactResponse;
 import com.example.contactmanager.contact.dto.CreateContactRequest;
+import com.example.contactmanager.contact.dto.UpdateContactRequest;
 import com.example.contactmanager.contact.model.entity.Contact;
 import com.example.contactmanager.contact.repository.ContactRepository;
 import com.example.contactmanager.contact.service.ContactService;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ContactServiceImpl implements ContactService {
@@ -40,7 +42,7 @@ public class ContactServiceImpl implements ContactService {
                         Collections.emptyMap()
                 ));
 
-        if (contactRepository.findByUserIdAndEmail(request.getUserId(), request.getEmail()).isPresent()) {
+        if (contactRepository.findByUserIdAndEmail(user.getId(), request.getEmail()).isPresent()) {
 
             logger.warn(
                     "Contact with email already exists! email={}",
@@ -54,7 +56,7 @@ public class ContactServiceImpl implements ContactService {
             );
         }
 
-        if (contactRepository.findByUserIdAndPhoneNumber(request.getUserId(), request.getPhoneNumber()).isPresent()) {
+        if (contactRepository.findByUserIdAndPhoneNumber(user.getId(), request.getPhoneNumber()).isPresent()) {
 
             logger.warn(
                     "Contact with phone number already exists! phoneNumber={}",
@@ -114,6 +116,24 @@ public class ContactServiceImpl implements ContactService {
     }
 
     @Override
+    public ContactResponse getContactByIdAndUserId(Long id, Long userId) {
+
+        Contact contact = contactRepository.findByIdAndUserId(id, userId)
+                .orElseThrow(() -> new NotFoundException(
+                        HttpStatus.NOT_FOUND.value(),
+                        "Contact not found for id: " + id +
+                        " for user with userId: " + userId,
+                        Collections.emptyMap()
+                ));
+
+        logger.info("userId={}", contact.getUser().getId());
+        logger.info("Contact retrieved successfully! contactId={}", contact.getId());
+
+        return mapToResponse(contact);
+
+    }
+
+    @Override
     public List<ContactResponse> getContactByUserId(Long userId) {
 
         if (!userRepository.existsById(userId)) {
@@ -141,94 +161,82 @@ public class ContactServiceImpl implements ContactService {
     }
 
     @Override
-    public List<ContactResponse> getAllContacts() {
+    public void deleteContact(Long id, Long userId) {
 
-        List<Contact> contact = contactRepository.findAll();
+        Contact contact = contactRepository.findByIdAndUserId(id, userId)
+                .orElseThrow(() -> new NotFoundException(
+                        HttpStatus.NOT_FOUND.value(),
+                        "Contact not found for id: " + id +
+                        " for user with userId: " + userId,
+                        Collections.emptyMap()
+                ));
 
-        logger.info("All contacts retrieved successfully!' totalContacts={}", contact.size());
+        logger.info("userId={}", contact.getUser().getId());
+        logger.info("Contact deleted successfully!' contactId={}", contact.getId());
 
-        return contact.stream()
-                .map(this::mapToResponse)
-                .toList();
+        contactRepository.delete(contact);
 
     }
 
-//    @Override
-//    public void deleteContact(Long id) {
-//
-//            Contact contact = contactRepository.findById(id)
-//                    .orElseThrow(() -> new NotFoundException(
-//                            HttpStatus.NOT_FOUND.value(),
-//                            "Contact not found with id: " + id,
-//                            Collections.emptyMap()
-//                    ));
-//
-//            logger.info("Contact deleted successfully!' contactId={}", contact.getId());
-//
-//            contactRepository.delete(contact);
-//
-//    }
+    @Override
+    public ContactResponse updateContact(Long id, Long userId, UpdateContactRequest request) {
 
-//    @Override
-//    public ContactResponse updateContact(Long id, UpdateContactRequest request) {
-//
-//        Contact contact = contactRepository.findById(id)
-//                .orElseThrow(() -> new NotFoundException(
-//                        HttpStatus.NOT_FOUND.value(),
-//                        "Contact not found with id: " + id,
-//                        Collections.emptyMap()
-//                ));
-//
-//        Optional<Contact> emailContact =
-//                contactRepository.findByEmail(request.getEmail());
-//
-//        if (emailContact.isPresent()
-//                && !emailContact.get().getId().equals(id)) {
-//
-//            logger.warn(
-//                    "Contact with email already exists! email={}",
-//                    request.getEmail()
-//            );
-//
-//            throw new ConflictException(
-//                    HttpStatus.CONFLICT.value(),
-//                    "Contact with email already exists: " + request.getEmail(),
-//                    Collections.emptyMap()
-//            );
-//        }
-//
-//        Optional<Contact> phoneContact =
-//                contactRepository.findByPhoneNumber(request.getPhoneNumber());
-//
-//        if (phoneContact.isPresent()
-//                && !phoneContact.get().getId().equals(id)) {
-//
-//            logger.warn(
-//                    "Contact with phone number already exists! phoneNumber={}",
-//                    request.getPhoneNumber()
-//            );
-//
-//            throw new ConflictException(
-//                    HttpStatus.CONFLICT.value(),
-//                    "Contact with phone number already exists: " + request.getPhoneNumber(),
-//                    Collections.emptyMap()
-//            );
-//        }
-//
-//        contact.setFirstName(request.getFirstName());
-//        contact.setLastName(request.getLastName());
-//        contact.setEmail(request.getEmail());
-//        contact.setPhoneNumber(request.getPhoneNumber());
-//
-//        Contact updatedContact = contactRepository.save(contact);
-//
-//        logger.info(
-//                "Contact updated successfully! contactId={}",
-//                updatedContact.getId()
-//        );
-//
-//        return mapToResponse(updatedContact);
-//
-//    }
+        Contact contact = contactRepository.findByIdAndUserId(id, userId)
+                .orElseThrow(() -> new NotFoundException(
+                        HttpStatus.NOT_FOUND.value(),
+                        "Contact not found with id: " + id +
+                        " for user with userId: " + userId,
+                        Collections.emptyMap()
+                ));
+
+        Optional<Contact> emailContact = contactRepository.findByUserIdAndEmail(userId, request.getEmail());
+
+        if (emailContact.isPresent() && !emailContact.get().getId().equals(id)) {
+
+            logger.warn(
+                    "Contact with email already exists! email={}",
+                    request.getEmail()
+            );
+
+            throw new ConflictException(
+                    HttpStatus.CONFLICT.value(),
+                    "Contact with email already exists: " + request.getEmail(),
+                    Collections.emptyMap()
+            );
+
+        }
+
+        Optional<Contact> phoneContact = contactRepository.findByUserIdAndPhoneNumber(userId, request.getPhoneNumber());
+
+        if (phoneContact.isPresent() && !phoneContact.get().getId().equals(id)) {
+
+            logger.warn(
+                    "Contact with phone number already exists! phoneNumber={}",
+                    request.getPhoneNumber()
+            );
+
+            throw new ConflictException(
+                    HttpStatus.CONFLICT.value(),
+                    "Contact with phone number already exists: " + request.getPhoneNumber(),
+                    Collections.emptyMap()
+            );
+
+        }
+
+        contact.setFirstName(request.getFirstName());
+        contact.setLastName(request.getLastName());
+        contact.setEmail(request.getEmail());
+        contact.setPhoneNumber(request.getPhoneNumber());
+
+        Contact updatedContact = contactRepository.save(contact);
+
+        logger.info(
+                "Contact updated successfully! contactId={}",
+                updatedContact.getId()
+        );
+
+        return mapToResponse(updatedContact);
+
+    }
 
 }
