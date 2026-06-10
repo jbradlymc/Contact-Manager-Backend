@@ -27,7 +27,7 @@ public class ContactServiceImpl implements ContactService {
     private final ContactRepository contactRepository;
     private final UserRepository userRepository;
 
-    public ContactServiceImpl (ContactRepository contactRepository, UserRepository userRepository) {
+    public ContactServiceImpl(ContactRepository contactRepository, UserRepository userRepository) {
         this.contactRepository = contactRepository;
         this.userRepository = userRepository;
     }
