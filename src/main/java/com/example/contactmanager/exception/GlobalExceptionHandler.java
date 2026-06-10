@@ -2,6 +2,7 @@ package com.example.contactmanager.exception;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -22,7 +23,7 @@ public class GlobalExceptionHandler {
     Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<ApiErrorResponse> handleBadRequestException(Exception exception) {
+    public ResponseEntity<ApiErrorResponse> handleNotFoundException(Exception exception) {
 
         NotFoundException raiseException = (NotFoundException) exception;
 
@@ -86,9 +87,22 @@ public class GlobalExceptionHandler {
 
     }
 
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiErrorResponse> handleDataIntegrityViolationException(Exception exception) {
+
+        ApiErrorResponse errorResponse = new ApiErrorResponse(
+                HttpStatus.CONFLICT.value(),
+                "Data integrity violation occurred",
+                Collections.emptyMap()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(errorResponse);
+    }
+
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiErrorResponse> handleException(
-            Exception exception) {
+    public ResponseEntity<ApiErrorResponse> handleException(Exception exception) {
 
         logger.error("Unexpected error occurred", exception);
 
