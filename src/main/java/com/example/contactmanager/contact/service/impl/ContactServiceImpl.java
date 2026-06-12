@@ -8,6 +8,8 @@ import com.example.contactmanager.contact.repository.ContactRepository;
 import com.example.contactmanager.contact.service.ContactService;
 import com.example.contactmanager.exception.ConflictException;
 import com.example.contactmanager.exception.NotFoundException;
+import com.example.contactmanager.user.model.entity.User;
+import com.example.contactmanager.user.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -23,15 +25,24 @@ public class ContactServiceImpl implements ContactService {
     private final Logger logger = LoggerFactory.getLogger(ContactServiceImpl.class);
 
     private final ContactRepository contactRepository;
+    private final UserRepository userRepository;
 
-    public ContactServiceImpl (ContactRepository contactRepository) {
+    public ContactServiceImpl(ContactRepository contactRepository, UserRepository userRepository) {
         this.contactRepository = contactRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
     public ContactResponse createContact(CreateContactRequest request) {
 
-        if (contactRepository.findByEmail(request.getEmail()).isPresent()) {
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new NotFoundException(
+                        HttpStatus.NOT_FOUND.value(),
+                        "User not found with id: " + request.getUserId(),
+                        Collections.emptyMap()
+                ));
+
+        if (contactRepository.findByUserIdAndEmail(user.getId(), request.getEmail()).isPresent()) {
 
             logger.warn(
                     "Contact with email already exists! email={}",
@@ -45,7 +56,7 @@ public class ContactServiceImpl implements ContactService {
             );
         }
 
-        if (contactRepository.findByPhoneNumber(request.getPhoneNumber()).isPresent()) {
+        if (contactRepository.findByUserIdAndPhoneNumber(user.getId(), request.getPhoneNumber()).isPresent()) {
 
             logger.warn(
                     "Contact with phone number already exists! phoneNumber={}",
@@ -60,6 +71,8 @@ public class ContactServiceImpl implements ContactService {
         }
 
         Contact contact = generateContact(request);
+
+        contact.setUser(user);
 
         Contact savedContact = contactRepository.save(contact);
 
@@ -85,17 +98,12 @@ public class ContactServiceImpl implements ContactService {
 
     }
 
-    private Contact saveContact(Contact contact) {
-
-        return contactRepository.save(contact);
-
-    }
-
     private ContactResponse mapToResponse(Contact contact) {
 
         ContactResponse response = new ContactResponse();
 
         response.setId(contact.getId());
+        response.setUserId(contact.getUser().getId());
         response.setFirstName(contact.getFirstName());
         response.setLastName(contact.getLastName());
         response.setEmail(contact.getEmail());
@@ -108,65 +116,82 @@ public class ContactServiceImpl implements ContactService {
     }
 
     @Override
-    public ContactResponse getContactById(Long id) {
+    public ContactResponse getContactByIdAndUserId(Long id, Long userId) {
 
-        Contact contact = contactRepository.findById(id)
+        Contact contact = contactRepository.findByIdAndUserId(id, userId)
                 .orElseThrow(() -> new NotFoundException(
                         HttpStatus.NOT_FOUND.value(),
-                        "Contact not found with id: " + id,
+                        "Contact not found for id: " + id +
+                        " for user with userId: " + userId,
                         Collections.emptyMap()
                 ));
 
-        logger.info("Contact retrieved successfully!' contactId={}", contact.getId());
+        logger.info("userId={}", contact.getUser().getId());
+        logger.info("Contact retrieved successfully! contactId={}", contact.getId());
 
         return mapToResponse(contact);
 
     }
 
     @Override
-    public List<ContactResponse> getAllContacts() {
+    public List<ContactResponse> getContactByUserId(Long userId) {
 
-        List<Contact> contact = contactRepository.findAll();
+        if (!userRepository.existsById(userId)) {
 
-        logger.info("All contacts retrieved successfully!' totalContacts={}", contact.size());
+            logger.warn(
+                    "User not found with id: {}",
+                    userId
+            );
 
-        return contact.stream()
+            throw new NotFoundException(
+                    HttpStatus.NOT_FOUND.value(),
+                    "User not found with id: " + userId,
+                    Collections.emptyMap()
+            );
+        }
+
+        List<Contact> contacts = contactRepository.findByUserId(userId);
+
+        logger.info("Contacts retrieved successfully for {}", userId);
+
+        return contacts.stream()
                 .map(this::mapToResponse)
                 .toList();
 
     }
 
     @Override
-    public void deleteContact(Long id) {
+    public void deleteContact(Long id, Long userId) {
 
-            Contact contact = contactRepository.findById(id)
-                    .orElseThrow(() -> new NotFoundException(
-                            HttpStatus.NOT_FOUND.value(),
-                            "Contact not found with id: " + id,
-                            Collections.emptyMap()
-                    ));
+        Contact contact = contactRepository.findByIdAndUserId(id, userId)
+                .orElseThrow(() -> new NotFoundException(
+                        HttpStatus.NOT_FOUND.value(),
+                        "Contact not found for id: " + id +
+                        " for user with userId: " + userId,
+                        Collections.emptyMap()
+                ));
 
-            logger.info("Contact deleted successfully!' contactId={}", contact.getId());
+        logger.info("userId={}", contact.getUser().getId());
+        logger.info("Contact deleted successfully!' contactId={}", contact.getId());
 
-            contactRepository.delete(contact);
+        contactRepository.delete(contact);
 
     }
 
     @Override
-    public ContactResponse updateContact(Long id, UpdateContactRequest request) {
+    public ContactResponse updateContact(Long id, Long userId, UpdateContactRequest request) {
 
-        Contact contact = contactRepository.findById(id)
+        Contact contact = contactRepository.findByIdAndUserId(id, userId)
                 .orElseThrow(() -> new NotFoundException(
                         HttpStatus.NOT_FOUND.value(),
-                        "Contact not found with id: " + id,
+                        "Contact not found with id: " + id +
+                        " for user with userId: " + userId,
                         Collections.emptyMap()
                 ));
 
-        Optional<Contact> emailContact =
-                contactRepository.findByEmail(request.getEmail());
+        Optional<Contact> emailContact = contactRepository.findByUserIdAndEmail(userId, request.getEmail());
 
-        if (emailContact.isPresent()
-                && !emailContact.get().getId().equals(id)) {
+        if (emailContact.isPresent() && !emailContact.get().getId().equals(id)) {
 
             logger.warn(
                     "Contact with email already exists! email={}",
@@ -178,13 +203,12 @@ public class ContactServiceImpl implements ContactService {
                     "Contact with email already exists: " + request.getEmail(),
                     Collections.emptyMap()
             );
+
         }
 
-        Optional<Contact> phoneContact =
-                contactRepository.findByPhoneNumber(request.getPhoneNumber());
+        Optional<Contact> phoneContact = contactRepository.findByUserIdAndPhoneNumber(userId, request.getPhoneNumber());
 
-        if (phoneContact.isPresent()
-                && !phoneContact.get().getId().equals(id)) {
+        if (phoneContact.isPresent() && !phoneContact.get().getId().equals(id)) {
 
             logger.warn(
                     "Contact with phone number already exists! phoneNumber={}",
@@ -196,6 +220,7 @@ public class ContactServiceImpl implements ContactService {
                     "Contact with phone number already exists: " + request.getPhoneNumber(),
                     Collections.emptyMap()
             );
+
         }
 
         contact.setFirstName(request.getFirstName());

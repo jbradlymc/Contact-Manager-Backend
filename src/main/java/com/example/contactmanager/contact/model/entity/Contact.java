@@ -1,16 +1,24 @@
 package com.example.contactmanager.contact.model.entity;
 
+import com.example.contactmanager.user.model.entity.User;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "contacts")
+@Table(
+        name = "contacts",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        columnNames = {"user_id", "email"}
+                ),
+                @UniqueConstraint(
+                        columnNames = {"user_id", "phone_number"}
+                )
+        }
+)
 public class Contact {
 
     @Id
@@ -21,10 +29,10 @@ public class Contact {
     private String firstName;
     private String lastName;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private String email;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private String phoneNumber;
 
     @CreationTimestamp
@@ -32,6 +40,10 @@ public class Contact {
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     public Long getId() {
         return id;
@@ -77,4 +89,11 @@ public class Contact {
         return updatedAt;
     }
 
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 }

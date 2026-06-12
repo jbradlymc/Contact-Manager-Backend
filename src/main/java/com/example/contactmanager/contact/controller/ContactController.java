@@ -23,7 +23,8 @@ public class ContactController {
     }
 
     @PostMapping("/createContact")
-    public ResponseEntity<ContactResponse> createContact(@Valid @RequestBody CreateContactRequest request) {
+    public ResponseEntity<ContactResponse> createContact(
+            @Valid @RequestBody CreateContactRequest request) {
 
         ContactResponse response = contactService.createContact(request);
 
@@ -33,37 +34,45 @@ public class ContactController {
 
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ContactResponse> getContactById(@PathVariable Long id) {
+    @GetMapping("/{userId}/{id}")
+    public ResponseEntity<ContactResponse> getContactByIdAndUserId(
+            @PathVariable Long id,
+            @PathVariable Long userId) {
 
-        ContactResponse response = contactService.getContactById(id);
-
-        return ResponseEntity.ok(response);
-
-    }
-
-    @GetMapping("/all")
-    public ResponseEntity<List<ContactResponse>> getAllContacts() {
-
-        List<ContactResponse> response = contactService.getAllContacts();
+        ContactResponse response = contactService.getContactByIdAndUserId(id, userId);
 
         return ResponseEntity.ok(response);
 
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteContact(@PathVariable Long id) {
+    @GetMapping("/{userId}")
+    public ResponseEntity<List<ContactResponse>> getContactByUserId(
+            @PathVariable Long userId) {
 
-        contactService.deleteContact(id);
+        List<ContactResponse> response = contactService.getContactByUserId(userId);
+
+        return ResponseEntity.ok(response);
+
+    }
+
+    @DeleteMapping("/{userId}/{id}")
+    public ResponseEntity<Void> deleteContact(
+            @PathVariable Long id,
+            @PathVariable Long userId) {
+
+        contactService.deleteContact(id, userId);
 
         return ResponseEntity.noContent().build();
 
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<ContactResponse> updateContact(@PathVariable Long id, @Valid @RequestBody UpdateContactRequest request) {
+    @PutMapping("/{userId}/{id}")
+    public ResponseEntity<ContactResponse> updateContact(
+            @PathVariable Long userId,
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateContactRequest request) {
 
-        ContactResponse response = contactService.updateContact(id, request);
+        ContactResponse response = contactService.updateContact(id, userId, request);
 
         return ResponseEntity.ok(response);
 
