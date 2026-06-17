@@ -4,7 +4,6 @@ import com.example.contactmanager.contact.dto.ContactResponse;
 import com.example.contactmanager.contact.dto.CreateContactRequest;
 import com.example.contactmanager.contact.dto.UpdateContactRequest;
 import com.example.contactmanager.contact.service.ContactService;
-import com.example.contactmanager.contact.service.impl.ContactServiceImpl;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

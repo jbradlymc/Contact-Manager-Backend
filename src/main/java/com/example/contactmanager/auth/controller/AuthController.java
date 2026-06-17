@@ -1,6 +1,7 @@
 package com.example.contactmanager.auth.controller;
 
 import com.example.contactmanager.auth.dto.LoginRequest;
+import com.example.contactmanager.auth.dto.LoginResponse;
 import com.example.contactmanager.auth.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -17,11 +18,12 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
 
         authService.login(request);
 
-        return ResponseEntity.ok("Login successful");
+        return ResponseEntity.ok(
+                new LoginResponse("Login successful"));
 
     }
 

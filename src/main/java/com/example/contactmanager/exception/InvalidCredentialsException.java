@@ -1,7 +1,38 @@
 package com.example.contactmanager.exception;
 
+import java.util.Map;
+
 public class InvalidCredentialsException extends RuntimeException {
-    public InvalidCredentialsException(String message) {
-        super(message);
+
+    private int errorCode;
+
+    private String errorMessage;
+
+    private Map<String, Object> errorDetails;
+
+    public InvalidCredentialsException() {
     }
+
+    public InvalidCredentialsException(
+            int errorCode,
+            String errorMessage,
+            Map<String, Object> errorDetails
+    ) {
+        this.errorCode = errorCode;
+        this.errorMessage = errorMessage;
+        this.errorDetails = errorDetails;
+    }
+
+    public int getErrorCode() {
+        return errorCode;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public Map<String, Object> getErrorDetails() {
+        return errorDetails;
+    }
+
 }
