@@ -31,7 +31,7 @@ class UserServiceImplTest {
     private UserServiceImpl userService;
 
     @Test
-    void createUser_ShouldCreateUserSuccessfully() {
+    void createUser_ShouldCreateUserSuccessfully_WhenRequestIsValid() {
 
         CreateUserRequest request = new CreateUserRequest();
         request.setUsername("josh");
@@ -125,7 +125,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void getUserById_ShouldReturnUser() {
+    void getUserById_ShouldReturnUser_WhenUserExists() {
 
         User user = new User();
         user.setId(1L);
@@ -160,7 +160,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void deleteUser_ShouldDeleteUserSuccessfully() {
+    void deleteUser_ShouldDeleteUserSuccessfully_WhenUserExists() {
 
         User user = new User();
         user.setId(1L);
@@ -190,7 +190,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void updateUser_ShouldUpdateUserSuccessfully() {
+    void updateUser_ShouldUpdateUserSuccessfully_WhenRequestIsValid() {
 
         Long userId = 1L;
 
@@ -318,7 +318,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void updateUser_ShouldAllowSameUsernameForCurrentUser() {
+    void updateUser_ShouldAllowSameUsername_WhenBelongsToCurrentUser() {
 
         Long userId = 1L;
 
