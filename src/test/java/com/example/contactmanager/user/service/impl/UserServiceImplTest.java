@@ -14,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 
@@ -27,8 +28,13 @@ class UserServiceImplTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
     @InjectMocks
     private UserServiceImpl userService;
+
+    //================= CREATE USER =====================
 
     @Test
     void createUser_ShouldCreateUserSuccessfully_WhenRequestIsValid() {
@@ -43,6 +49,9 @@ class UserServiceImplTest {
 
         when(userRepository.findByEmail("josh@email.com"))
                 .thenReturn(Optional.empty());
+
+        when(passwordEncoder.encode("password"))
+                .thenReturn("hashed-password");
 
         User savedUser = new User();
         savedUser.setId(1L);
@@ -65,6 +74,9 @@ class UserServiceImplTest {
         User captured = captor.getValue();
         assertEquals("josh", captured.getUsername());
         assertEquals("josh@email.com", captured.getEmail());
+        assertEquals("hashed-password", captured.getPassword());
+
+        verify(passwordEncoder).encode("password");
 
     }
 
@@ -124,6 +136,8 @@ class UserServiceImplTest {
 
     }
 
+    //================= GET USER =====================
+
     @Test
     void getUserById_ShouldReturnUser_WhenUserExists() {
 
@@ -159,6 +173,8 @@ class UserServiceImplTest {
 
     }
 
+    //================= DELETE USER =====================
+
     @Test
     void deleteUser_ShouldDeleteUserSuccessfully_WhenUserExists() {
 
@@ -189,6 +205,8 @@ class UserServiceImplTest {
 
     }
 
+    //================= UPDATE USER =====================
+
     @Test
     void updateUser_ShouldUpdateUserSuccessfully_WhenRequestIsValid() {
 
@@ -213,10 +231,16 @@ class UserServiceImplTest {
         when(userRepository.findByEmail("new@email.com"))
                 .thenReturn(Optional.empty());
 
+        when(passwordEncoder.encode("newPassword"))
+                .thenReturn("hashed-new-password");
+
         when(userRepository.save(any(User.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         UserResponse response = userService.updateUser(userId, request);
+
+        assertEquals("newUser", response.getUsername());
+        assertEquals("new@email.com", response.getEmail());
 
         ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
         verify(userRepository).save(captor.capture());
@@ -224,6 +248,9 @@ class UserServiceImplTest {
         User updated = captor.getValue();
         assertEquals("newUser", updated.getUsername());
         assertEquals("new@email.com", updated.getEmail());
+        assertEquals("hashed-new-password", updated.getPassword());
+
+        verify(passwordEncoder).encode("newPassword");
 
     }
 
@@ -290,12 +317,11 @@ class UserServiceImplTest {
         anotherUser.setId(2L);
 
         UpdateUserRequest request = new UpdateUserRequest();
+        request.setUsername("newUser");
         request.setEmail("existing@email.com");
 
         when(userRepository.findById(userId))
                 .thenReturn(Optional.of(currentUser));
-
-        request.setUsername("newUser");
 
         when(userRepository.findByUsername("newUser"))
                 .thenReturn(Optional.empty());
@@ -341,10 +367,10 @@ class UserServiceImplTest {
         when(userRepository.save(any(User.class)))
                 .thenReturn(user);
 
-        UserResponse response =
-                userService.updateUser(userId, request);
+        UserResponse response = userService.updateUser(userId, request);
 
         assertEquals("josh", response.getUsername());
+        assertEquals("josh@email.com", response.getEmail());
 
     }
 
