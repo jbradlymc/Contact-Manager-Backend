@@ -9,9 +9,11 @@ import com.example.contactmanager.user.model.entity.User;
 import com.example.contactmanager.user.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 
 import java.util.Optional;
 
@@ -57,7 +59,12 @@ class UserServiceImplTest {
         assertEquals("josh", response.getUsername());
         assertEquals("josh@email.com", response.getEmail());
 
-        verify(userRepository).save(any(User.class));
+        ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(captor.capture());
+
+        User captured = captor.getValue();
+        assertEquals("josh", captured.getUsername());
+        assertEquals("josh@email.com", captured.getEmail());
 
     }
 
@@ -66,6 +73,7 @@ class UserServiceImplTest {
 
         CreateUserRequest request = new CreateUserRequest();
         request.setUsername("josh");
+        request.setEmail("josh@email.com");
 
         User existingUser = new User();
 
@@ -91,7 +99,11 @@ class UserServiceImplTest {
     void createUser_ShouldThrowConflictException_WhenEmailExists() {
 
         CreateUserRequest request = new CreateUserRequest();
+        request.setUsername("josh");
         request.setEmail("josh@email.com");
+
+        when(userRepository.findByUsername("josh"))
+                .thenReturn(Optional.empty());
 
         User existingUser = new User();
 
@@ -137,10 +149,13 @@ class UserServiceImplTest {
         when(userRepository.findById(1L))
                 .thenReturn(Optional.empty());
 
-        assertThrows(
+        NotFoundException exception = assertThrows(
                 NotFoundException.class,
                 () -> userService.getUserById(1L)
         );
+
+        assertEquals(HttpStatus.NOT_FOUND.value(), exception.getErrorCode());
+        assertNotNull(exception.getErrorMessage());
 
     }
 
@@ -203,10 +218,12 @@ class UserServiceImplTest {
 
         UserResponse response = userService.updateUser(userId, request);
 
-        assertEquals("newUser", response.getUsername());
-        assertEquals("new@email.com", response.getEmail());
+        ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(captor.capture());
 
-        verify(userRepository).save(user);
+        User updated = captor.getValue();
+        assertEquals("newUser", updated.getUsername());
+        assertEquals("new@email.com", updated.getEmail());
 
     }
 
@@ -328,6 +345,7 @@ class UserServiceImplTest {
                 userService.updateUser(userId, request);
 
         assertEquals("josh", response.getUsername());
+
     }
 
 }
