@@ -36,6 +36,8 @@ class ContactServiceImplTest {
     @InjectMocks
     private ContactServiceImpl contactService;
 
+    //================= CREATE CONTACT =====================
+
     @Test
     void createContact_ShouldReturnContactResponse_WhenRequestIsValid() {
 
@@ -203,6 +205,8 @@ class ContactServiceImplTest {
 
     }
 
+    //================= GET CONTACT =====================
+
     @Test
     void getContactByIdAndUserId_ShouldReturnContactResponse_WhenContactExists() {
 
@@ -317,6 +321,8 @@ class ContactServiceImplTest {
         assertTrue(responses.isEmpty());
     }
 
+    //================= DELETE CONTACT =====================
+
     @Test
     void deleteContact_ShouldDeleteContact_WhenContactExists() {
 
@@ -363,6 +369,8 @@ class ContactServiceImplTest {
         verify(contactRepository, never()).delete(any());
 
     }
+
+    //================= UPDATE CONTACT =====================
 
     @Test
     void updateContact_ShouldReturnUpdatedContact_WhenRequestIsValid() {
