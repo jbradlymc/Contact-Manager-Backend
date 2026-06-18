@@ -1,6 +1,7 @@
 package com.example.contactmanager.auth.service.impl;
 
 import com.example.contactmanager.auth.dto.LoginRequest;
+import com.example.contactmanager.auth.dto.LoginResponse;
 import com.example.contactmanager.auth.service.AuthService;
 import com.example.contactmanager.exception.InvalidCredentialsException;
 import com.example.contactmanager.user.model.entity.User;
@@ -27,18 +28,12 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void login(LoginRequest request) {
+    public LoginResponse login(LoginRequest request) {
 
-        logger.info(
-                "Login attempt for identifier: {}",
-                request.getIdentifier()
-        );
+        logger.info("Login attempt for identifier: {}", request.getIdentifier());
 
         User user = userRepository
-                .findByUsernameOrEmail(
-                        request.getIdentifier(),
-                        request.getIdentifier()
-                )
+                .findByUsernameOrEmail(request.getIdentifier(), request.getIdentifier())
                 .orElseThrow(() -> {
 
                     logger.warn(
@@ -71,10 +66,9 @@ public class AuthServiceImpl implements AuthService {
 
         }
 
-        logger.info(
-                "Login successful for user with identifier:{}",
-                request.getIdentifier()
-        );
+        logger.info("Login successful for user: {}", request.getIdentifier());
+
+        return new LoginResponse("Login successful");
 
     }
 
