@@ -2,14 +2,14 @@ package com.example.contactmanager.auth.dto;
 
 public class LoginResponse {
 
-    private String message;
+    private String token;
 
-    public LoginResponse(String message) {
-        this.message = message;
+    public LoginResponse(String token) {
+        this.token = token;
     }
 
-    public String getMessage() {
-        return message;
+    public String getToken() {
+        return token;
     }
 
 }

@@ -4,6 +4,7 @@ import com.example.contactmanager.auth.dto.LoginRequest;
 import com.example.contactmanager.auth.dto.LoginResponse;
 import com.example.contactmanager.auth.service.AuthService;
 import com.example.contactmanager.exception.InvalidCredentialsException;
+import com.example.contactmanager.security.JwtService;
 import com.example.contactmanager.user.model.entity.User;
 import com.example.contactmanager.user.repository.UserRepository;
 import org.slf4j.Logger;
@@ -21,10 +22,14 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
-    public AuthServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public AuthServiceImpl(UserRepository userRepository,
+                           PasswordEncoder passwordEncoder,
+                           JwtService jwtService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
 
     @Override
@@ -65,6 +70,8 @@ public class AuthServiceImpl implements AuthService {
             );
 
         }
+
+        String token = jwtService.generateToken(user.getUsername());
 
         logger.info("Login successful for user: {}", request.getIdentifier());
 
