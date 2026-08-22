@@ -1,6 +1,7 @@
 package com.example.contactmanager.security;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -81,19 +82,26 @@ public class JwtService {
 
         logger.info("Validating JWT token for username: {}", username);
 
-        final String extractedUsername = extractUsername(token);
+        try {
 
-        if (!extractedUsername.equals(username)) {
-            logger.warn("JWT token validation failed: username does not match");
-            return false;
-        }
+            final String extractedUsername = extractUsername(token);
 
-        if(isTokenExpired(token)) {
+            if (!extractedUsername.equals(username)) {
+                logger.warn("JWT token validation failed: username does not match");
+                return false;
+            }
+
+            if(isTokenExpired(token)) {
+                logger.warn("JWT token validation failed: token is expired");
+                return false;
+            }
+
+            return true;
+
+        } catch (ExpiredJwtException e) {
             logger.warn("JWT token validation failed: token is expired");
             return false;
         }
-
-        return true;
     }
 
     private boolean isTokenExpired(String token) {
