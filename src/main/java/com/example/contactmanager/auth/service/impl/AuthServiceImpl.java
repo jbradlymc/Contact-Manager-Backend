@@ -75,7 +75,7 @@ public class AuthServiceImpl implements AuthService {
 
         logger.info("Login successful for user: {}", request.getIdentifier());
 
-        return new LoginResponse(token, "Bearer", jwtService.getJwtExpiration());
+        return new LoginResponse(token, "Bearer", jwtService.extractExpiration(token));
     }
 
 }

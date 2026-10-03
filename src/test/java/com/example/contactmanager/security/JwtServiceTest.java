@@ -1,5 +1,6 @@
 package com.example.contactmanager.security;
 
+import com.example.contactmanager.security.impl.JwtServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -16,7 +17,7 @@ class JwtServiceTest {
 
     @BeforeEach
     void setUp() {
-        jwtService = new JwtService(testSecretKey, testExpirationTime);
+        jwtService = new JwtServiceImpl(testSecretKey, testExpirationTime);
     }
 
     //================= GENERATE TOKEN =====================
@@ -76,7 +77,7 @@ class JwtServiceTest {
         String username = "test-user";
         String token = jwtService.generateToken(username);
 
-        assertTrue(jwtService.validateToken(token, username));
+        assertTrue(jwtService.isTokenValid(token, username));
 
     }
 
@@ -85,19 +86,19 @@ class JwtServiceTest {
         String username = "test-user";
         String token = jwtService.generateToken(username);
 
-        assertFalse(jwtService.validateToken(token, "wrong-username"));
+        assertFalse(jwtService.isTokenValid(token, "wrong-username"));
 
     }
 
     @Test
     void validateToken_ShouldReturnFalse_WhenTokenIsExpired() throws InterruptedException {
 
-        JwtService shortLivedJwtService = new JwtService(testSecretKey, 1000L); // 1 second expiration
+        JwtService shortLivedJwtService = new JwtServiceImpl(testSecretKey, 1000L); // 1 second expiration
         String username = "test-user";
         String token = shortLivedJwtService.generateToken(username);
 
         Thread.sleep(1500L); // Sleep for 1.5 seconds
 
-        assertFalse(shortLivedJwtService.validateToken(token, username));
+        assertFalse(shortLivedJwtService.isTokenValid(token, username));
     }
 }

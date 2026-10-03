@@ -1,17 +1,19 @@
 package com.example.contactmanager.auth.dto;
 
+import java.util.Date;
+
 public class LoginResponse {
 
     private String token;
     private String tokenType;
-    private Long expiresIn;
+    private Date expiresAt;
 
     public LoginResponse(String token,
                          String tokenType,
-                         Long expiresIn) {
+                         Date expiresAt) {
         this.token = token;
         this.tokenType = tokenType;
-        this.expiresIn = expiresIn;
+        this.expiresAt = expiresAt;
     }
 
     public String getToken() {
@@ -22,7 +24,7 @@ public class LoginResponse {
         return tokenType;
     }
 
-    public Long getExpiresIn() {
-        return expiresIn;
+    public Date getExpiresAt() {
+        return expiresAt;
     }
 }
